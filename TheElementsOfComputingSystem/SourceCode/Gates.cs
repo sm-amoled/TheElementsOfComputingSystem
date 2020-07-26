@@ -1,3 +1,6 @@
+using System;
+using System.Linq;  // Enumerable 사용을 위함
+
 namespace Gates {
     class BoolGate {
         // Nand GATE는 OR, And 게이트보다 구현하는데 있어서 더 적은 부품을 사용하며 속도도 더 빠르고 집적율도 좋으며 어떤 논리회로도 Nand GATE 만으로 그현할 수 있기 때문에, Nand GATE를 기본 소자로 하여 칩을 디자인한다.
@@ -94,6 +97,98 @@ namespace Gates {
             }
 
             return output;
+        }
+
+        public static bool[] Mux8Way16(bool[] A, bool[] B, bool[] C, bool[] D, bool[] E, bool[] F, bool[] G, bool[] H, bool[] selector) {
+            bool[] output = new bool[16];
+            bool[] selected = (selector[2])? (selector[1])? ((selector[0])? H:G) : ((selector[0])? F:E) : (selector[1])? ((selector[0])? D:C) : ((selector[0])? B:A);
+
+            for(int i = 0; i <16; i++) {
+                output[i] = selected[i];
+            }
+
+            return output;
+        }
+
+        public static void DMux4Way (bool[] input, out bool[] A, out bool[] B, out bool[] C, out bool[] D, bool[] selector) {
+            //CS0269 out관련 에러 대응 초기화
+            A = input; B = input; C = input; D = input;
+
+            A = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            B = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            C = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            D = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+
+            int selectSwitch = 0;
+            for(int i = 0; i < selector.Length; i++) {
+                selectSwitch += (Convert.ToInt32(selector[i]) * (int)(Math.Pow(2,i)));
+            }
+
+            switch(selectSwitch) {
+                case 0:
+                    A = (bool[]) input.Clone();
+                    break;
+                case 1:
+                    B = (bool[]) input.Clone();
+                    break;
+                case 2:
+                    C = (bool[]) input.Clone();
+                    break;
+                case 3:
+                    D = (bool[]) input.Clone();
+                    break;
+            }
+
+            return;
+        }
+
+        public static void DMux8Way (bool[] input, out bool[] A, out bool[] B, out bool[] C, out bool[] D, out bool[] E, out bool[] F, out bool[] G, out bool[] H, bool[] selector) {
+            //CS0269 out관련 에러 대응 초기화
+            A = input; B = input; C = input; D = input; E = input; F = input; G = input; H = input;
+
+            A = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            B = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            C = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            D = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            E = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            F = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            G = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+            H = Enumerable.Repeat<bool>(false, A.Length).ToArray<bool>();
+
+            int selectSwitch = 0;
+            for(int i = 0; i < selector.Length; i++) {
+                selectSwitch += (Convert.ToInt32(selector[i]) * (int)(Math.Pow(2,i)));
+            }
+                Console.WriteLine(selectSwitch);
+
+            switch(selectSwitch) {
+                case 0:
+                    A = (bool[]) input.Clone();
+                    break;
+                case 1:
+                    B = (bool[]) input.Clone();
+                    break;
+                case 2:
+                    C = (bool[]) input.Clone();
+                    break;
+                case 3:
+                    D = (bool[]) input.Clone();
+                    break;
+                case 4:
+                    E = (bool[]) input.Clone();
+                    break;
+                case 5:
+                    F = (bool[]) input.Clone();
+                    break;
+                case 6:
+                    G = (bool[]) input.Clone();
+                    break;
+                case 7:
+                    H = (bool[]) input.Clone();
+                    break;
+            }
+
+            return;
         }
     }
 }
