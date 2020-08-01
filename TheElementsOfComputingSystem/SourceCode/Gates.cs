@@ -1,8 +1,10 @@
 using System;
 using System.Linq;  // Enumerable 사용을 위함
 
-namespace Gates {
-    class BoolGate {
+namespace CombinationalChips {
+    
+    // Chapter 2 불 논리
+    class BoolLogic {
         // Nand GATE는 OR, And 게이트보다 구현하는데 있어서 더 적은 부품을 사용하며 속도도 더 빠르고 집적율도 좋으며 어떤 논리회로도 Nand GATE 만으로 그현할 수 있기 때문에, Nand GATE를 기본 소자로 하여 칩을 디자인한다.
 
         public static bool Nand(bool a, bool b) {
@@ -189,6 +191,53 @@ namespace Gates {
             }
 
             return;
+        }
+    }
+
+    // Chapter 2 불 연산
+    class BoolOperation {
+        public static void HalfAdder(bool a, bool b, out bool sum, out bool carry) {
+            sum = BoolLogic.Xor(a,b);
+            carry = BoolLogic.And(a,b);
+        }
+
+        static bool HalfAdder_Carry(bool a, bool b) {
+            return BoolLogic.And(a,b);
+        }
+
+        static bool HalfAdder_Sum(bool a, bool b) {
+            return BoolLogic.Xor(a,b);
+        }
+
+        public static void FullAdder(bool a, bool b, bool c, out bool sum, out bool carry) {
+            carry = BoolLogic.Or(HalfAdder_Carry(a,b), HalfAdder_Carry(HalfAdder_Sum(a,b), c));
+            sum = HalfAdder_Sum(HalfAdder_Sum(a,b), c);
+        }
+
+        static bool FullAdder_Carry(bool a, bool b, bool c) {
+            return BoolLogic.Or(HalfAdder_Carry(a,b), HalfAdder_Carry(HalfAdder_Sum(a,b), c));
+        }
+
+        static bool FullAdder_Sum(bool a, bool b, bool c) {
+            return HalfAdder_Sum(HalfAdder_Sum(a,b), c);
+        }
+
+        public static bool[] Add16(bool[] a, bool[] b) {
+            bool[] result = new bool[16];
+            bool carry = false;
+
+            for(int i = 0; i < 16; i++) {
+                result[i] = FullAdder_Sum(a[i], b[i], carry);
+                carry = FullAdder_Carry(a[i], b[i], carry);
+            }
+
+            return result;
+        }
+
+        public static bool[] Inc16(bool[] input) {
+            bool[] one = new bool[16] {true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+            
+            return Add16(input, one);
         }
     }
 }
