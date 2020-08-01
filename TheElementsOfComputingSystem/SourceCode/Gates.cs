@@ -42,10 +42,10 @@ namespace CombinationalChips {
         // 실제 HW에서는 출력값의 변화가 입력값에 영향을 주지 않는 순차적인 방식이 적용되므로, 새로운 배열을 만들어 return 해줬다.
 
         public static bool[] Not16(bool[] input) {
-            bool[] output = input;
+            bool[] output = new bool[16];
             
             for(int i = 0; i < 16; i++) {
-                output[i] = Not(output[i]);
+                output[i] = Not(input[i]);
             }
 
             return output;
@@ -74,7 +74,7 @@ namespace CombinationalChips {
 
         public static bool[] Mux16(bool[] A, bool[] B, bool selector) {
             bool[] output = new bool[16];
-            bool[] selected = (selector)? A:B;
+            bool[] selected = (!selector)? A:B;
 
             for(int i = 0; i <16; i++) {
                 output[i] = selected[i];
@@ -243,7 +243,7 @@ namespace CombinationalChips {
 
         public static bool[] ALU(bool[] x, bool[] y, bool zx, bool nx, bool zy, bool ny, bool f, bool no, out bool zr, out bool ng) {
             bool[] result = new bool[16];
-            bool[] ground = new bool[16] {true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+            bool[] ground = new bool[16] {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
 
             //zx, nx
             x = BoolLogic.Mux16(x, (bool[]) ground.Clone(), zx);
@@ -251,21 +251,25 @@ namespace CombinationalChips {
 
             //zy, ny
             y = BoolLogic.Mux16(y, (bool[]) ground.Clone(), zy);
-            x = BoolLogic.Mux16(y, BoolLogic.Not16(y), ny);
+            y = BoolLogic.Mux16(y, BoolLogic.Not16(y), ny);
+
 
             bool[] temp1, temp2;
 
-            temp1 = Add16(x,y);
-            temp2 = BoolLogic.And16(x,y);
+            temp1 = BoolLogic.And16(x,y);
+            temp2 = Add16(x,y);
 
             // MUX에 의해 골라진 걸 result에 넣음
             result = BoolLogic.Mux16(temp1, temp2, f);
-            BoolLogic.Mux16(result, BoolLogic.Not16(result), no);
+
+            // NO 조건 검사
+            result = BoolLogic.Mux16(result, BoolLogic.Not16(result), no);
 
             // out
             ng = result[15];
-            zr = BoolLogic.Or16Way(result);
+            zr = BoolLogic.Not(BoolLogic.Or16Way(result));
             return result;
         }
     }
 }
+
