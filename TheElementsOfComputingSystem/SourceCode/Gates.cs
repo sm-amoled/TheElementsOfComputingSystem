@@ -1,8 +1,8 @@
 using System;
 using System.Linq;  // Enumerable 사용을 위함
 
-namespace Gates {
-    class BoolGate {
+namespace CombinationalChips {
+    class BoolLogic {
         // Nand GATE는 OR, And 게이트보다 구현하는데 있어서 더 적은 부품을 사용하며 속도도 더 빠르고 집적율도 좋으며 어떤 논리회로도 Nand GATE 만으로 그현할 수 있기 때문에, Nand GATE를 기본 소자로 하여 칩을 디자인한다.
 
         public static bool Nand(bool a, bool b) {
@@ -85,7 +85,11 @@ namespace Gates {
 
         //*** Multi Way Gate *************
         public static bool Or8Way(bool[] input) {
-            return Or(Or(Or(input[0], input[1]), Or(input[3], input[4])),Or(Or(input[5], input[6]), Or(input[7], input[8])));
+            return Or(Or(Or(input[0], input[1]), Or(input[2], input[3])),Or(Or(input[4], input[5]), Or(input[6], input[7])));
+        }
+
+        public static bool Or16Way(bool[] input) {
+            return Or(Or(Or(Or(input[0], input[1]), Or(input[2], input[3])),Or(Or(input[4], input[5]), Or(input[6], input[7]))), Or(Or(Or(input[8], input[9]), Or(input[10], input[11])),Or(Or(input[12], input[13]), Or(input[14], input[15]))));
         }
 
         public static bool[] Mux4Way16(bool[] A, bool[] B, bool[] C, bool[] D, bool[] selector) {
@@ -189,6 +193,79 @@ namespace Gates {
             }
 
             return;
+        }
+    }
+
+    class BoolOperation {
+        public static void HalfAdder(bool a, bool b, out bool sum, out bool carry) {
+            sum = BoolLogic.Xor(a,b);
+            carry = BoolLogic.And(a,b);
+        }
+
+        static bool HalfAdder_Carry(bool a, bool b) {
+            return BoolLogic.And(a,b);
+        }
+
+        static bool HalfAdder_Sum(bool a, bool b) {
+            return BoolLogic.Xor(a,b);
+        }
+
+        public static void FullAdder(bool a, bool b, bool c, out bool sum, out bool carry) {
+            carry = BoolLogic.Or(HalfAdder_Carry(a,b), HalfAdder_Carry(HalfAdder_Sum(a,b), c));
+            sum = HalfAdder_Sum(HalfAdder_Sum(a,b), c);
+        }
+
+        static bool FullAdder_Carry(bool a, bool b, bool c) {
+            return BoolLogic.Or(HalfAdder_Carry(a,b), HalfAdder_Carry(HalfAdder_Sum(a,b), c));
+        }
+
+        static bool FullAdder_Sum(bool a, bool b, bool c) {
+            return HalfAdder_Sum(HalfAdder_Sum(a,b), c);
+        }
+
+        public static bool[] Add16(bool[] a, bool[] b) {
+            bool[] result = new bool[16];
+            bool carry = false;
+
+            for(int i = 0; i < 16; i++) {
+                result[i] = FullAdder_Sum(a[i], b[i], carry);
+                carry = FullAdder_Carry(a[i], b[i], carry);
+            }
+
+            return result;
+        }
+
+        public static bool[] Inc16(bool[] input) {
+            bool[] one = new bool[16] {true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+            
+            return Add16(input, one);
+        }
+
+        public static bool[] ALU(bool[] x, bool[] y, bool zx, bool nx, bool zy, bool ny, bool f, bool no, out bool zr, out bool ng) {
+            bool[] result = new bool[16];
+            bool[] ground = new bool[16] {true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+
+            //zx, nx
+            x = BoolLogic.Mux16(x, (bool[]) ground.Clone(), zx);
+            x = BoolLogic.Mux16(x, BoolLogic.Not16(x), nx);
+
+            //zy, ny
+            y = BoolLogic.Mux16(y, (bool[]) ground.Clone(), zy);
+            x = BoolLogic.Mux16(y, BoolLogic.Not16(y), ny);
+
+            bool[] temp1, temp2;
+
+            temp1 = Add16(x,y);
+            temp2 = BoolLogic.And16(x,y);
+
+            // MUX에 의해 골라진 걸 result에 넣음
+            result = BoolLogic.Mux16(temp1, temp2, f);
+            BoolLogic.Mux16(result, BoolLogic.Not16(result), no);
+
+            // out
+            ng = result[15];
+            zr = BoolLogic.Or16Way(result);
+            return result;
         }
     }
 }

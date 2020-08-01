@@ -1,16 +1,18 @@
 using System;
-using Gates;
+using CombinationalChips;
+using DebugTools;
 
 class MainClass {
     public static void Main (string[] args) {
        
-        bool[] input = {true, false, false, true, false, false, true, false, false, true, false, false, true, false, false, true};
-        bool[] input1 = {true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false};
-        bool[] input2 = {false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true};
-        bool[] input3 = {true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true};
-        bool[] input4 = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
-        
+        bool[] input = DebugTool.IntToBools16(1);
+        bool[] input2 = DebugTool.IntToBools16(1);
 
-        BoolGate.DMux4Way(input, out input1, out input2, out input3, out input4, new bool[] {false, true});
+        bool[] setValue = DebugTool.IntToBools8(01111100);
+
+        bool[] result = BoolOperation.ALU(input, input2, setValue[7], setValue[6], setValue[5], setValue[4], setValue[3], setValue[2], out setValue[1], out setValue[0]);
+
+        DebugTool.PrintBools(result);
     }
 }
+
