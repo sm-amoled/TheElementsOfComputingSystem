@@ -211,6 +211,7 @@ namespace CombinationalChips {
         }
 
         public static void FullAdder(bool a, bool b, bool c, out bool sum, out bool carry) {
+
             carry = BoolLogic.Or(HalfAdder_Carry(a,b), HalfAdder_Carry(HalfAdder_Sum(a,b), c));
             sum = HalfAdder_Sum(HalfAdder_Sum(a,b), c);
         }
@@ -272,4 +273,3 @@ namespace CombinationalChips {
         }
     }
 }
-
