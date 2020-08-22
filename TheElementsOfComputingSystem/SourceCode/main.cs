@@ -1,32 +1,68 @@
 using System;
 using CombinationalChips;
+using SequentialChips;
 using DebugTools;
 
 class MainClass {
     public static void Main (string[] args) {
-        while(true) {
-            Console.Write("VA : ");
-            int a = int.Parse(Console.ReadLine());
-            Console.Write("VB : ");
-            int b = int.Parse(Console.ReadLine());
 
-            bool[] input = DebugTool.IntToBools16(a);
-            bool[] input2 = DebugTool.IntToBools16(b);
-            
-            bool[] outValue = new bool[2];
-            
-            Console.Write("Flag : ");
-            int flags = int.Parse(Console.ReadLine());
-            bool[] setValue = DebugTool.IntToBoolFlagReverse6(flags);
+        Counter16Bit counter = new Counter16Bit();
 
+        bool[] input = DebugTool.IntToBools16(15);
+        counter.value = input;
 
-            bool[] result = BoolOperation.ALU(input, input2, 
-                                            setValue[0], setValue[1], setValue[2], setValue[3], setValue[4], setValue[5], 
-                                            out outValue[0], out outValue[1]);
+        counter.LoadTrue();
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
 
-            DebugTool.PrintBools(result);
-            Console.WriteLine("zr = {0}, ng = {1}\n", outValue[0], outValue[1]);
-        }
+        counter.IncTrue();
+
+        Console.WriteLine("");
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+
+        Console.WriteLine("");
+
+        counter.IncFalse();
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+
+        Console.WriteLine("");
+
+        counter.ResetTrue();
+        counter.IncTrue();
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+
+        Console.WriteLine("");
+
+        counter.value = DebugTool.IntToBools16(256);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+
+        Console.WriteLine("");
+
+        counter.LoadTrue();
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
+        CLK.CLKChange();
+        DebugTool.PrintBools(counter.value);
     }
 }
 
