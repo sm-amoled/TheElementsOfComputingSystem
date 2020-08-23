@@ -1,32 +1,25 @@
 using System;
 
 namespace SequentialChips {
-    public static class CLK {
-        public delegate void CLKEventHandler();
-        public static event CLKEventHandler CLKEvent;
+public static class CLK {
+    public delegate void CLKEventHandler();
+    public static event CLKEventHandler CLKEvent;
 
-        public static void CLKChange() {
-            CLKValue = !(CLKValue);
-            if(CLKEvent != null)
-            {
-                // Console.WriteLine("Event 발생");
-                CLKEvent();
-            }
-        }  
+    public static void CLKChange() {
+        CLKValue = !(CLKValue);
+        if(CLKEvent != null)
+        {
+            // Console.WriteLine("Event 발생");
+            CLKEvent();
+        }
+    }  
 
-        static bool CLKValue = false;
-    }
+    static bool CLKValue = false;
+}
 
 
     // DFF
-    // DFF는 NAND 게이트로만 쉽게 구현이 가능하다. 
-    // 그러나 전자회로와는 다르게 컴퓨터에서의 신호는 단발성 신호이므로 (지속적으로 신호가 오지 않으므로) 회로 프로그램을 사용하지 않는 이상, Data Flip Flop을 구현하더라도 이전 시간의 신호를 내보내는 DFF는 유효하지 않다고 생각된다. 오히려 이전 신호를 "저장"하기 때문에 이는 Register의 기능이라고 판단. 이에 따라 DFF 대신 들어간 신호를 저장하는 1BitRegister를 적극 활용할 생각이다.
-    // 프로젝트의 교재에서도 DFF는 기본 게이트로 생각하고 구현하지는 않는다.
-
-    // 1BitRegister
-    public class Bit {
-        public bool load = false;
-
+    public class DFF {
         private bool state;
         private bool inputState;
 
@@ -35,24 +28,39 @@ namespace SequentialChips {
                 return state;
             }
             set {
-                load = true;
                 inputState = value;
+            }
+        }
+
+        public DFF() {
+            state = false;
+            CLK.CLKEvent += new CLK.CLKEventHandler(StateChange);
+        }
+
+        private void StateChange() {
+            state = inputState;
+        }
+    }
+
+
+    // 1BitRegister
+    public class Bit {
+        private DFF dff;
+
+        public bool value {
+            get {
+                return dff.value;
+            }
+            set {
+                // 새로운 값이 들어오면 load bit이 1이라고 가정하고 값을 바꾸어준다. 
+                // 그게 아니라면 값을 유지.
+                dff.value = value;
             }
         }
 
         // Constructor
         public Bit() {
-            state = false;
-            CLK.CLKEvent += new CLK.CLKEventHandler(StateChange);
-        }
-
-        // CLK 변화 Event에 반응
-        private void StateChange() {
-            if(load) {
-                // Console.WriteLine("Load 발생");
-                state = inputState;    
-                load = false;
-            }
+            dff = new DFF();
         }
     }
 
@@ -66,7 +74,7 @@ namespace SequentialChips {
             for(int i = 0; i < 16; i++) {
                 state[i] = new Bit();
             }
-       }
+        }
 
         public bool[] value {
             get {
@@ -76,7 +84,7 @@ namespace SequentialChips {
                     result[i] = state[i].value;
                 }
                 return result;
-             }
+                }
             set {
                 for(int i = 0; i < 16; i++) {
                     state[i].value = value[i];
@@ -130,7 +138,7 @@ namespace SequentialChips {
         public bool[] value {
             get {
                 return state.value;
-             }
+                }
             set {
                 inputState = (bool[]) value.Clone();
             }
