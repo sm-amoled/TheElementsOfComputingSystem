@@ -11,6 +11,7 @@ Chapter 2. 불 연산
      -> CombinationalChips에 구현  
 Chapter 3. 순차 논리 (Consequential Logic) ~  
      -> SequentionalChips에 구현
- 
+Chapter 4. 기계어
+  
 ## 구현 예정  
-Chapter 4. 기계여
+Chapter 5. 어셈블러
