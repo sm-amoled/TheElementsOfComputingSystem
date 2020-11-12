@@ -1,0 +1,72 @@
+CHIP CPU {
+	IN inM[16], instruction[16], reset; 
+	// instruction은 "ixxa cccc ccdd djjj" 의 bit 배열을 갖는다. 제일 오른쪽이 index 0이다.
+	
+	OUT outM[16], writeM, addressM[15], pc[15];
+	
+
+	PARTS:
+	// A register
+	// if instruction[15](i bit) is 0 ,then A instruction, else C instruction
+	// A instruction 인지 C instruction인지 확인 후 aType, cType을 set 한다.	
+	Not(in=instruction[15], out=aType);
+	Not(in=aType, out=cType);
+	
+	// C instruction일 때 dest0 bit이 1이면 ALU의 result가, 0이면 instruction이 A register에 input된다.
+	And(a=cType, b=instruction[5], out=ALUtoA);
+	Mux16(a=instruction, b=ALUout, sel=ALUtoA, out=ARegin);
+	
+	// instruction이 A type이거나 dest0이 1이면 (A Register에 값을 저장해야하면) loadA가 1이 되어, A register에 input된 값이 저장된다.
+	// 값이 input되더라도 load bit이 set되어야 저장된다는게 헷갈릴 수 있다. 
+	Or(a=instruction[5], b=aType, out=loadA);
+	ARegister(in=ARegin, load=loadA, out=ARegout);
+	
+	
+	// ALU의 Y input에 A register의 값이 들어갈 지 inM이 들어갈 지 instruction의 a bit이 결정한다.
+	// instruction's 'a bit' select which will be input between A & M
+	Mux16(a=ARegout, b=inM, sel=instruction[12], out=ALUYin);
+	
+	
+	// D register
+	// instruction이 C type이고 dest1이 1이면 (D register에 값을 저장해야하면) loadD가 1이 되어, D register에 ALUout이 저장된다.
+	// if C instruction and instruction[4] is 1 , then ALUout
+	And(a=cType, b=instruction[4], out=loadD);
+	DRegister(in=ALUout, load=loadD, out=DRegout);
+	
+	
+	// ALU
+	// ALU에는 input 2개, 6개의 comp bit, ng, zr, ALUout을 연결해준다. 앞에서 만들었던 ALU chip을 활용한다.
+	ALU(x=DRegout, y=ALUYin, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8] , f=instruction[7], no=instruction[6] , out=ALUout, zr=ZRout, ng=NGout);
+	
+	
+	// Jump
+	// Jump conditions - Negative, Zero, Positive
+	// ALU의 연산 결과로 나온 ng, zr flag를 이용해 pos flag도 만들어둔다.	
+	Or(a=NGout, b=ZRout, out=NGZR);
+	Not(in=NGZR, out=posi);
+	
+	// instruction의 3개의 jump bit과 해당 조건을 비교하여 옳은게 있으면 jlt, jeq, jgt에 1을 set한다.
+	And(a=instruction[2], b=NGout, out=jlt);
+	And(a=instruction[1], b=ZRout, out=jeq);
+	And(a=instruction[0], b=posi, out=jgt); 
+	
+	// if true exist between three conditions, jump
+	// instruction이 C type일 때 위 조건 중 하나라도 1이 있으면 (하나라도 조건을 충족했다면 - 범위에 들었다면) jump를 실행한다.
+	Or(a=jlt, b=jeq, out=jle);
+	Or(a=jle, b=jgt, out=jumpToA);
+	And(a=cType, b=jumpToA, out=PCload);
+	Not(in=PCload, out=PCinc);
+	
+	
+	// PC
+	// PC에는 A Register에 저장되어있던 값을 load하여 jump를 실행한다.
+	// jump가 없을때는 단순히 inc bit을 set하여 PC값을 증가시킨다.
+	PC(in=ARegout, inc=PCinc, load=PCload, reset=reset, out[0..14]=pc);
+	
+	
+	// CPU Outputs
+	// if destination is Memory and cType, writeM = 1
+	And(a=cType, b=instruction[3], out=writeM);
+	Or16(a=false, b=ARegout, out[0..14]=addressM);
+	Or16(a=false, b=ALUout, out=outM); 
+}
