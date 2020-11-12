@@ -9,7 +9,7 @@ TheElementsOfComputingSystem 책에 대한 Project를 공부하며 Github에 업
 Chapter 1. 불 논리  
 Chapter 2. 불 연산  -> CombinationalChips에 구현  
 Chapter 3. 순차 논리 (Consequential Logic)  -> SequentionalChips에 구현  
-Chapter 4. 기계어 (구현이 아닌, 예제 작성해보기)
+Chapter 4. 기계어 (구현이 아닌, 예제 작성해보기)  
 Chapter 5. 컴퓨터 아키텍처  
 
 ## 구현 예정  
